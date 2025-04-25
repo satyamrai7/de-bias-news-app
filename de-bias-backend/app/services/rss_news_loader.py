@@ -9,73 +9,73 @@ from app.database.db_operations import DB_operations as db
 
 ############################# Currently not in use ######################################################
 
-def normalize_text(text: str) -> str:
-    """
-    Normalize text by lowering case and replacing hyphens with spaces.
-    """
-    return text.lower().replace('-', ' ')
+# def normalize_text(text: str) -> str:
+#     """
+#     Normalize text by lowering case and replacing hyphens with spaces.
+#     """
+#     return text.lower().replace('-', ' ')
 
 
-def is_news_relevant(title: str, summary: str) -> int:
-    """
-    Returns 1 if any keyword is found in title or summary, else 0.
-    """
+# def is_news_relevant(title: str, summary: str) -> int:
+#     """
+#     Returns 1 if any keyword is found in title or summary, else 0.
+#     """
 
-    keywords = {
-        "election", "elections", "vote", "voting", "ballot", "polls", "campaign",
-        "government", "regime", "parliament", "congress", "senate", "cabinet",
-        "minister", "ministry", "president", "prime minister", "chancellor",
-        "governor", "mayor", "geopolitics", "diplomacy", "foreign policy",
-        "national security", "border", "territory", "sovereignty", "treaty",
-        "sanctions", "UN", "NATO", "G7", "G20", "EU", "BRICS", "OPEC", "conflict",
-        "war", "invasion", "airstrike", "missile", "terror", "terrorist", "military",
-        "armed forces", "troops", "defense", "defence", "army", "navy", "coup",
-        "rebellion", "protest", "uprising", "civil unrest", "martial law",
-        "intelligence", "espionage", "spy", "The US", "strikes", "Israel", "Palestine", "Gaza", "West Bank", "U.S",
-        "curfew", "unrest", "riot", "bomb", "missile", "Houthi", "Terrorism", "killed", "kill",
-        "Market", "markets", "opposition"
+#     keywords = {
+#         "election", "elections", "vote", "voting", "ballot", "polls", "campaign",
+#         "government", "regime", "parliament", "congress", "senate", "cabinet",
+#         "minister", "ministry", "president", "prime minister", "chancellor",
+#         "governor", "mayor", "geopolitics", "diplomacy", "foreign policy",
+#         "national security", "border", "territory", "sovereignty", "treaty",
+#         "sanctions", "UN", "NATO", "G7", "G20", "EU", "BRICS", "OPEC", "conflict",
+#         "war", "invasion", "airstrike", "missile", "terror", "terrorist", "military",
+#         "armed forces", "troops", "defense", "defence", "army", "navy", "coup",
+#         "rebellion", "protest", "uprising", "civil unrest", "martial law",
+#         "intelligence", "espionage", "spy", "The US", "strikes", "Israel", "Palestine", "Gaza", "West Bank", "U.S",
+#         "curfew", "unrest", "riot", "bomb", "missile", "Houthi", "Terrorism", "killed", "kill",
+#         "Market", "markets", "opposition"
 
-        "Biden", "Trump", "Republican", "Democrat", "GOP", "Congress",
-        "White House", "Capitol", "Senate", "House of Representatives", "Supreme Court",
-        "SCOTUS", "DOJ", "FBI", "CIA", "IRS", "immigration", "2024 election", 
-        "midterm", "presidential debate", "January 6", "gun control", "abortion",
-        "border wall", "The US", "tarrif", "wall", "illegal", "immigrants", "mexico",
-        "The USA", "USA", "U.S.A", "nuclear", "Iran",
+#         "Biden", "Trump", "Republican", "Democrat", "GOP", "Congress",
+#         "White House", "Capitol", "Senate", "House of Representatives", "Supreme Court",
+#         "SCOTUS", "DOJ", "FBI", "CIA", "IRS", "immigration", "2024 election", 
+#         "midterm", "presidential debate", "January 6", "gun control", "abortion",
+#         "border wall", "The US", "tarrif", "wall", "illegal", "immigrants", "mexico",
+#         "The USA", "USA", "U.S.A", "nuclear", "Iran",
 
-        "Tories", "Labour", "Conservatives", "Brexit", "Downing Street",
-        "House of Commons", "House of Lords", "Rishi Sunak", "Keir Starmer", "NHS",
-        "Parliament", "Scotland", "Northern Ireland", "The UK", "UK",
+#         "Tories", "Labour", "Conservatives", "Brexit", "Downing Street",
+#         "House of Commons", "House of Lords", "Rishi Sunak", "Keir Starmer", "NHS",
+#         "Parliament", "Scotland", "Northern Ireland", "The UK", "UK",
 
-        "BJP", "Congress", "AAP", "Shiv Sena", "DMK", "AIADMK", "Modi", "Rahul Gandhi", "Lok Sabha", "Rajya Sabha",
-        "assembly elections", "CAA", "NRC", "Hindu", "Hindutva", "RSS", "ED", "CBI",
-        "Delhi", "Kashmir", "Pakistan", "Reservation", "Language", "Caste", "elections",
-        "election", "NEP", "UCC", "Muslim", "Islam", "Islamist", "WAQF", "Maoist", "Tribal", "Brahmin", "Dalit", "OBC",
-        "Bangladesh", "Rohingya", "Kashmir", "India", "GDP",
+#         "BJP", "Congress", "AAP", "Shiv Sena", "DMK", "AIADMK", "Modi", "Rahul Gandhi", "Lok Sabha", "Rajya Sabha",
+#         "assembly elections", "CAA", "NRC", "Hindu", "Hindutva", "RSS", "ED", "CBI",
+#         "Delhi", "Kashmir", "Pakistan", "Reservation", "Language", "Caste", "elections",
+#         "election", "NEP", "UCC", "Muslim", "Islam", "Islamist", "WAQF", "Maoist", "Tribal", "Brahmin", "Dalit", "OBC",
+#         "Bangladesh", "Rohingya", "Kashmir", "India", "GDP",
 
-        "Xi Jinping", "CCP", "Taiwan", "Hong Kong", "South China Sea", "Uighur", "Uyghur",
-        "Xinjiang", "Censorship", "One China", "PLA", "Covid", "China",
+#         "Xi Jinping", "CCP", "Taiwan", "Hong Kong", "South China Sea", "Uighur", "Uyghur",
+#         "Xinjiang", "Censorship", "One China", "PLA", "Covid", "China",
 
-        "Putin", "Zelenskyy", "Ukraine", "Crimea", "Donbas", "Moscow", "Kremlin",
-        "NATO", "war", "sanctions", "invasion", "Kyiv",
+#         "Putin", "Zelenskyy", "Ukraine", "Crimea", "Donbas", "Moscow", "Kremlin",
+#         "NATO", "war", "sanctions", "invasion", "Kyiv",
 
-        "abortion", "LGBTQ", "trans", "immigration", "gun rights", "climate change",
-        "woke", "cancel culture", "CRT", "freedom of speech",
+#         "abortion", "LGBTQ", "trans", "immigration", "gun rights", "climate change",
+#         "woke", "cancel culture", "CRT", "freedom of speech",
 
-        "referendum", "autonomy", "dictatorship", "corruption", "authoritarian",
-        "liberal", "conservative", "left-wing", "right-wing", "populist", "separatist",
-        "opposition leader"
-    }
+#         "referendum", "autonomy", "dictatorship", "corruption", "authoritarian",
+#         "liberal", "conservative", "left-wing", "right-wing", "populist", "separatist",
+#         "opposition leader"
+#     }
 
-    combined_text_list = normalize_text(f"{title} {summary}").split(" ")
+#     combined_text_list = normalize_text(f"{title} {summary}").split(" ")
 
-    hits = 0
-    for word in combined_text_list:
-        if word in keywords:
-            hits += 1
-        if hits >= 3:
-            return 1
+#     hits = 0
+#     for word in combined_text_list:
+#         if word in keywords:
+#             hits += 1
+#         if hits >= 3:
+#             return 1
 
-    return 0
+#     return 0
 
 ######################################################################################################
 
