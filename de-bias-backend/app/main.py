@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import news
+from app.routes import news, analysis
 from app.services.rss_url_loader import RssUrlLoader
 from datetime import datetime
 from app.database.db_operations import DB_operations as db
@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
     await RssUrlLoader.load_rss_urls()
     print(f"RSS URL Loader completed at - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    asyncio.create_task(background_news_updater())
+    #asyncio.create_task(background_news_updater())
     yield
 
     print(f"Application ended at - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -63,6 +63,7 @@ app.add_middleware(
 
 # Include the news API routes
 app.include_router(news.router)
+app.include_router(analysis.router)
 
 
 @app.get("/")
