@@ -1,13 +1,16 @@
+import os
 from fastapi import APIRouter
 from app.database.db_operations import DB_operations as db
-#from transformers import pipeline
 from bs4 import BeautifulSoup
 import requests
+from dotenv import load_dotenv
 from google import genai
+from pathlib import Path
 
+load_dotenv(dotenv_path=Path('./.env'))
+app_key = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key="TEST_API_KEY")
-
+client = genai.Client(api_key=app_key)
 
 router = APIRouter()
 
@@ -59,30 +62,23 @@ def scrape_article(url):
         print(f"Error scraping article: {e}")
         return ""
 
-def summarize_article(text):
-    return "I am batman"
+def analyze_article(text):
     try:
-        prompt = f"Summarize the following news article in 5-6 sentences:\n\n{text}"
-
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(f"Summarize the following news article in 5-6 sentences:\n\n{text}")
-        return response.text.strip()
-    except Exception as e:
-        print(f"Error during summarization: {e}")
-        return "Error summarizing the article."
-
-
-def classify_bias(text):
-    try:
-        prompt = "Classify the political bias of the following news article. Options are: Very Left, Left, Center, Right, Very Right, Not Applicable. Only output one of these options and no extra words.\n\n" + text
+        prompt = f"Summarize the following news article within 70 words. Also classify the political bias. Options are: Very Left, Left, Center, Right, Very Right, Not Applicable. Delimit using '|||||': \n\n{text}"
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt,
         )
-        return response.text.strip()
+        
+        response_text = response.text.strip()
+
+        print(response_text)
+
+        return tuple(response_text.split("|||||"))
+
     except Exception as e:
-        print(f"Error during bias classification: {e}")
-        return "Not Applicable"
+        print(f"Error during summarization: {e}")
+        return "Error summarizing the article."
 
 
 @router.get("/news/{news_id}/analyze")
@@ -91,6 +87,5 @@ async def get_news_analysis(news_id: int):
     news_link = await fetch_news_url(news_id)
     print(news_link)
     article_text = scrape_article(news_link)
-    summary = summarize_article(article_text)
-    bias = classify_bias(article_text)
+    summary, bias = analyze_article(article_text)
     return {"summary": summary, "bias": bias}
