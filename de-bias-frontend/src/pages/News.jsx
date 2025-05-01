@@ -22,7 +22,18 @@ export default function News() {
   const [hasMoreNews, setHasMoreNews] = useState(true);
   const [selectedNews, setSelectedNews] = useState(null); // for modal
   const [loading, setLoading] = useState(false);
+  const [analytics, setAnalytics] = useState(["",""]);
 
+  const biasStyles = {
+    "Far Left": "bg-green-100 text-green-600",
+    "Left": "bg-green-200 text-green-700",
+    "Center": "bg-gray-200 text-gray-700",
+    "Right": "bg-red-200 text-red-700",
+    "Far Right": "bg-red-100 text-red-600",
+    "NA": "bg-gray-100 text-gray-500"
+  };
+
+  const biasClass = biasStyles[analytics[1]] || "bg-gray-100 text-gray-500";
 
   const observer = useRef();
 
@@ -62,6 +73,37 @@ export default function News() {
     fetchNewsByCategory();
   }, [newscategory]);
 
+  useEffect(() => {
+    setAnalytics(["Loading summary using AI tools...", "Detecting..."]);
+    if(selectedNews)
+    {
+      console.log("Inside I am more")
+      const fetchAnalytics = async () => {
+        console.log(selectedNews.news_id)
+        const response = await axios.get(`http://127.0.0.1:8000/news/${selectedNews.news_id}/analyze`);
+        console.log(response.data);
+        const status = response.data.status;
+        console.log(status)
+        if(status == "Y")
+        {
+          const summary = response.data.summary;
+          const bias = response.data.bias;
+          console.log(summary)
+          console.log(bias)
+          setAnalytics([summary,bias])
+          console.log(analytics)
+        }
+        else{
+          const summary = "Summary isn't available at the moment. Please try later."
+          const bias = "NA"
+          setAnalytics([summary,bias])
+        }
+      }
+      fetchAnalytics();
+    }
+  }, [selectedNews])
+
+
   async function LoadNewsFromCursor() {
     if (!cursor) {
       setHasMoreNews(false);
@@ -86,6 +128,7 @@ export default function News() {
         setLoading(false); // Hide loader
     }
   }
+  
   return (
     <div className="bg-gray-100 min-h-screen">
       <Navbar selected={newscategory} onSelect={setNewsCategory} />
@@ -169,10 +212,10 @@ export default function News() {
               ✕
             </button>
             <h2 className="text-xl font-bold mb-4">Article Analysis</h2>
-            <p className="mb-3 text-sm text-gray-600"><strong>Summary:</strong> (Placeholder for summary API result)</p>
+            <p className="mb-3 text-sm text-gray-600"><strong>Summary:</strong> {analytics[0]}</p>
             <p className="mb-3 text-sm text-gray-600">
               <strong>Bias Tag:</strong>{" "}
-              <span className="px-2 py-1 rounded-full bg-red-100 text-red-600 text-xs font-semibold">Very Left</span>
+              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${biasStyles[analytics[1]] || "bg-gray-100 text-gray-500"}`}>{analytics[1]}</span>
             </p>
             {/* Future: Add sentiment, credibility, etc */}
           </div>
