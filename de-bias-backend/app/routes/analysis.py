@@ -74,18 +74,22 @@ def analyze_article(text):
 
         print(response_text)
 
-        return tuple(response_text.split("|||||"))
+        if '|||||' in response_text:
+            return tuple(response_text.split("|||||"))
+
+        else:
+            return ("Summary isn't available at the moment. Please try later!","NA")
 
     except Exception as e:
         print(f"Error during summarization: {e}")
-        return "Error summarizing the article."
+        return ("There was an issue summarizing the choosen article!","NA")
 
 
 @router.get("/news/{news_id}/analyze")
 async def get_news_analysis(news_id: int):
     # Fetch news from DB
     news_link = await fetch_news_url(news_id)
-    print(news_link)
     article_text = scrape_article(news_link)
+    print(article_text)
     summary, bias = analyze_article(article_text)
-    return {"summary": summary, "bias": bias}
+    return {"summary": summary, "bias": bias, "status":"Y"}
